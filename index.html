@@ -5,51 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader { border-top-color: #3498db; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">TeraBox & DiskWala DL</h1>
-        <input id="linkInput" type="text" placeholder="Paste link here..." class="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <button onclick="download()" id="btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Get Download Link</button>
+<body class="bg-slate-900 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <h1 class="text-3xl font-extrabold mb-2 text-center text-indigo-600">Video DL</h1>
+        <p class="text-center text-gray-500 mb-8 text-sm">TeraBox & DiskWala Support</p>
         
-        <div id="loader" class="hidden mt-4 text-center text-gray-500">Processing...</div>
+        <input id="linkInput" type="text" placeholder="Paste link here..." 
+               class="w-full p-4 border-2 border-gray-100 rounded-xl mb-4 focus:outline-none focus:border-indigo-500 transition-all">
         
-        <div id="result" class="hidden mt-6 p-4 border-t">
-            <p id="title" class="font-bold text-gray-800 truncate"></p>
-            <p id="size" class="text-sm text-gray-500 mb-4"></p>
-            <a id="dlLink" href="#" target="_blank" class="block text-center bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">Download Video</a>
+        <button onclick="download()" id="btn" 
+                class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transform active:scale-95 transition-all shadow-lg">
+            Generate Download Link
+        </button>
+        
+        <div id="loader" class="hidden mt-6 flex flex-col items-center">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10 mb-2"></div>
+            <p class="text-gray-500 text-sm animate-pulse">Bypassing servers...</p>
+        </div>
+        
+        <div id="result" class="hidden mt-8 p-5 bg-indigo-50 rounded-xl border border-indigo-100">
+            <h3 class="font-bold text-gray-800 text-lg mb-1 break-words" id="title"></h3>
+            <p id="size" class="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-4"></p>
+            
+            <div class="space-y-3">
+                <a id="dlLink" href="#" target="_blank" 
+                   class="block text-center bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition shadow-md">
+                    🚀 Direct Download
+                </a>
+                <button onclick="copyToClipboard()" class="w-full text-xs text-indigo-600 font-semibold hover:underline">
+                    Copy Direct Link
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        let currentLink = "";
+
         async function download() {
             const url = document.getElementById('linkInput').value;
-            const btn = document.getElementById('btn');
             const result = document.getElementById('result');
             const loader = document.getElementById('loader');
 
-            if(!url) return alert("Please paste a link!");
+            if(!url) return alert("Please paste a valid link!");
 
             loader.classList.remove('hidden');
             result.classList.add('hidden');
 
             try {
-                const res = await fetch(`/api/extract?url=${encodeURIComponent(url)}`);
-                const data = await res.json();
+                const response = await fetch(`/api/extract?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
                 
-                if(data.status === "success") {
+                if(data.status === "success" && data.link) {
+                    currentLink = data.link;
                     document.getElementById('title').innerText = data.title;
                     document.getElementById('size').innerText = "Size: " + data.size;
                     document.getElementById('dlLink').href = data.link;
                     result.classList.remove('hidden');
                 } else {
-                    alert("Error: " + data.message);
+                    alert(data.message || "Link extraction failed.");
                 }
             } catch (e) {
-                alert("Server error. Make sure backend is running.");
+                alert("Server Connection Error. Is the backend running?");
             } finally {
                 loader.classList.add('hidden');
             }
+        }
+
+        function copyToClipboard() {
+            if(!currentLink) return;
+            navigator.clipboard.writeText(currentLink);
+            alert("Link copied to clipboard!");
         }
     </script>
 </body>
