@@ -14,8 +14,8 @@ A lightweight, fast web application to extract direct download links from TeraBo
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone https://github.com/erharshitcse/linkDownloader.git
+    cd linkDownloader
     ```
 
 2.  **Install dependencies:**
